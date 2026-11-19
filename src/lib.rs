@@ -343,8 +343,8 @@ impl ClockPage {
         // count names holds at least the pair that publish wrote.
         let generation = self.word(PUBLISH_WORD_INDEX).load(Ordering::Acquire);
         let copy = copy_for(generation);
-        let st = self.word(STATE_WORD_INDEX[copy]).load(Ordering::Relaxed);
-        let off = self.word(OFFSET_WORD_INDEX[copy]).load(Ordering::Relaxed);
+        let state = self.word(STATE_WORD_INDEX[copy]).load(Ordering::Relaxed);
+        let offset_nanoseconds = self.word(OFFSET_WORD_INDEX[copy]).load(Ordering::Relaxed);
         // Keep the two data loads above the second load of the count. Without it the compiler or
         // the machine may move them after it, and the check would validate nothing.
         //
@@ -361,8 +361,8 @@ impl ClockPage {
         // finished. The full 64-bit count, not the copy bit, is what lets a reader that slept
         // across two publishes see that it did.
         (self.word(PUBLISH_WORD_INDEX).load(Ordering::Relaxed) == generation).then_some(Reading {
-            state: st,
-            offset_nanoseconds: off,
+            state,
+            offset_nanoseconds,
             generation,
         })
     }
