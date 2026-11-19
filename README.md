@@ -76,11 +76,23 @@ assert_eq!(
 
 ## What is proven
 
-Two Kani harnesses (`cargo kani`) cover every input. `policy::decide` accepts a proposal only inside the plausibility window and the step bounds, and accepts every plausible proposal when the time is unknown. The request word's opcode and the offset arithmetic round trip. Each has a patch under `falsifications/` that makes it fail. The loom run checks three claims against the C11 model, not against the
-Arm or RISC-V memory models. A reader never returns a torn pair, including a reader that sleeps
-across two publishes. A writer stopped at any point inside a publish never makes a reader wait. Two
-writers never interleave. Weakening any ordering on the page fails one of them, except the
-release that gives the claim back, which loom passes and the argument in the source carries.
+Two Kani harnesses cover every input:
+
+- `verification::a_proposal_is_accepted_only_inside_the_policy_bounds`: `policy::decide` accepts a
+  proposal only inside the plausibility window and the step bounds, and accepts every plausible
+  proposal when the time is unknown.
+- `verification::the_request_word_and_the_offset_round_trip`: the request word's opcode and the
+  offset arithmetic round trip.
+
+Each has a patch under `falsifications/` that makes it fail.
+
+The loom run checks the clock page against the C11 model, not against the Arm or RISC-V memory
+models. Its models hold three claims. A reader never returns a torn pair, including a reader
+that sleeps across two publishes and one that reads while the page is initialized. A writer stopped
+at any point inside a publish never makes a reader wait, and a restart that clears its claim keeps
+the last publish. Two writers never interleave. Weakening any ordering on the page fails one of
+them, except the release that gives the claim back, which loom passes and the argument in the
+source carries.
 
 ## Building and testing
 
@@ -89,9 +101,45 @@ The crate needs 64-bit atomics (`target_has_atomic = "64"`): every word of the p
 
 ```sh
 cargo test
-cargo build --lib --target x86_64-unknown-none   # also aarch64-unknown-none-softfloat, riscv64imac-unknown-none-elf
-RUSTFLAGS="--cfg loom" cargo test --release      # the clock page under every interleaving loom permits
+rustup target add x86_64-unknown-none aarch64-unknown-none-softfloat riscv64imac-unknown-none-elf
+cargo build --lib --target x86_64-unknown-none
+cargo build --lib --target aarch64-unknown-none-softfloat
+cargo build --lib --target riscv64imac-unknown-none-elf
 ```
+
+Run `rustup target add` once, before the first bare-metal build. `cargo test` runs the unit tests
+and the doctests in a few seconds.
+
+### Running the loom models
+
+```sh
+RUSTFLAGS="--cfg loom" cargo test --release
+```
+
+This runs the loom models in place of the unit tests, so it reports fewer tests than `cargo test`,
+each a model rather than a unit test. It takes under half a minute, most of it compiling loom.
+
+### Running the proofs
+
+Install Kani 0.68.0, the version CI uses, with `cargo install --locked kani-verifier --version
+0.68.0`, then `cargo kani setup`, which downloads a model checker. Plain `cargo kani` runs both
+harnesses in a few seconds and ends `Complete - 2 successfully verified harnesses, 0 failures, 2
+total.` To run one:
+
+```sh
+cargo kani --harness verification::a_proposal_is_accepted_only_inside_the_policy_bounds --exact
+```
+
+### Running one falsification patch
+
+```sh
+git apply falsifications/verification.a_proposal_is_accepted_only_inside_the_policy_bounds.patch
+cargo kani --harness verification::a_proposal_is_accepted_only_inside_the_policy_bounds --exact   # ends VERIFICATION:- FAILED
+git checkout -- src
+```
+
+The harness name is the part of the patch's file name after `verification.`, and each patch turns
+its own harness red.
 
 ## BUGS
 
@@ -100,7 +148,13 @@ RUSTFLAGS="--cfg loom" cargo test --release      # the clock page under every in
 
 ## Minimum Rust version
 
-Rust 1.88.
+Rust 1.88, for the host and the bare-metal builds alike. To check it:
+
+```sh
+rustup toolchain install 1.88 --profile minimal --target x86_64-unknown-none
+cargo +1.88 test
+cargo +1.88 build --lib --target x86_64-unknown-none
+```
 
 ## License
 
