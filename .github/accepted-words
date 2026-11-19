@@ -3,3 +3,6 @@
 # nobody says its expansion). A line without a reason is refused. Plurals with `s` or `es` follow.
 #
 # lba  the specifications and every reader say LBA
+cmos  the PC clock chip and every reader of it say CMOS; the expansion names a process, not the device
+pl  part of PL031, Arm's PrimeCell part number, which its reference manual and device trees spell so
+unix  the Unix epoch is the name the POSIX and C standards and every reader use
