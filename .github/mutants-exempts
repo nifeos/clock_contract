@@ -3,7 +3,7 @@
 # A line without a reason is refused, and a line naming a survivor that no longer exists is
 # refused too, so this list can only shrink by a diff that says why.
 
-# The first mutation run on main (2026-11-19) named every survivor below; it had no timeouts.
+# The survivors below are the full set the mutation gate names on main; it reports no timeouts.
 
 src/lib.rs:49 # spin_hint only tells the processor it is in a wait loop; with the hint removed every loop still exits on the same condition
 src/lib.rs:620 # at equality both arms compare a zero step with a non-zero bound and fall through to ACCEPTED, so > and >= decide every input alike
@@ -12,3 +12,9 @@ src/lib.rs:1148 # a loom model helper, compiled only under cfg(loom); its checke
 src/lib.rs:1161 # a loom model's reached flag, compiled only under cfg(loom); its checker is the loom run, which cargo test never builds
 src/lib.rs:1164 # a loom model's reached check, compiled only under cfg(loom); its checker is the loom run, which cargo test never builds
 src/verification.rs:14 # a Kani harness body; its checker is cargo kani in the proofs workflow, and cargo test never runs it
+src/verification.rs:20 # a Kani harness line, compiled only under cfg(kani); its checker is cargo kani in the proofs workflow, and cargo test never builds it
+src/verification.rs:23 # a Kani harness line, compiled only under cfg(kani); its checker is cargo kani in the proofs workflow, and cargo test never builds it
+src/verification.rs:38 # a Kani harness line, compiled only under cfg(kani); its checker is cargo kani in the proofs workflow, and cargo test never builds it
+src/verification.rs:49 # a Kani harness line, compiled only under cfg(kani); its checker is cargo kani in the proofs workflow, and cargo test never builds it
+src/verification.rs:50 # a Kani harness line, compiled only under cfg(kani); its checker is cargo kani in the proofs workflow, and cargo test never builds it
+src/verification.rs:55 # a Kani harness line, compiled only under cfg(kani); its checker is cargo kani in the proofs workflow, and cargo test never builds it
