@@ -6,4 +6,4 @@ permissions:
   pull-requests: read
 jobs:
   hold:
-    uses: partsfoundry/crate-workflows/.github/workflows/hold.yml@11d6d6bbf760462fa1e45275d34b55b88dcde44a
+    uses: partsfoundry/crate-workflows/.github/workflows/hold.yml@1e0c8988d43817a1ca1d8ced76ee048edb0a8aed
